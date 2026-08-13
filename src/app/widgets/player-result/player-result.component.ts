@@ -3,6 +3,7 @@ import { Offer } from 'src/app/models/offer';
 import { Player } from 'src/app/models/player';
 import { OffersService } from 'src/app/services/offers.service';
 import { PlayerMapperService } from 'src/app/services/player-mapper.service';
+import { SalaryScaleService } from 'src/app/services/salary-scale.service';
 
 @Component({
   selector: 'app-player-result',
@@ -14,11 +15,13 @@ export class PlayerResultComponent implements OnInit {
   offers: Offer[] = [];
   winners: number[] = [];
   average: number = 0;
+  bestOffer: number = 0;
   ownerOffer: number = 0;
   displayLoading: boolean = false;
   ownerWins: boolean = true;
 
-  constructor(private offerService: OffersService, private playerMapperService: PlayerMapperService, private cd: ChangeDetectorRef) { }
+  constructor(private offerService: OffersService, private playerMapperService: PlayerMapperService,
+              private salaryScaleService: SalaryScaleService, private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {
      this.getOffers();
@@ -51,14 +54,19 @@ export class PlayerResultComponent implements OnInit {
       }
     }
     this.average = 0;
+    this.bestOffer = 0;
     const average = arr => arr.reduce((p, c) => p + c, 0) / arr.length;
 
     if (amounts.length > 0) {
       const result = average(amounts);
       this.average = result;
+      this.bestOffer = Math.max(...amounts);
     }
 
-    if (this.ownerOffer >= this.average) {
+    // Un RFA se garde en égalant la meilleure offre reçue; un UFA, en égalant la moyenne.
+    const amountToBeat = this.isRFA() ? this.bestOffer : this.average;
+
+    if (this.ownerOffer >= amountToBeat) {
       this.winners.push(this.player.team.teamID);
       this.ownerWins = true;
     } else {
@@ -99,28 +107,29 @@ export class PlayerResultComponent implements OnInit {
   }
 
   findRFAWinners() {
-    var highestOffer = 0;
+    console.log("highestOffer= " + this.bestOffer);
 
     for (let index = 0; index < this.offers.length; index++) {
       const offer = this.offers[index];
       if(!offer.isOwner){
-        var amount = offer.amount;
-        if (amount > highestOffer) {
-          highestOffer = amount;
-        }
-      }
-    }
-    console.log("highestOffer= " + highestOffer);
-
-    for (let index = 0; index < this.offers.length; index++) {
-      const offer = this.offers[index];
-      if(!offer.isOwner){
-        var amount = offer.amount;
-        if (amount === highestOffer) {
+        if (offer.amount === this.bestOffer) {
           this.winners.push(offer.teamId);
         }
       }
     }
+  }
+
+  isRFA(): boolean {
+    return this.player != null && this.player.status === 'RFA';
+  }
+
+  // La compensation n'est due que si un RFA est arraché à son équipe d'origine.
+  showCompensation(): boolean {
+    return this.isRFA() && !this.ownerWins && this.bestOffer > 0;
+  }
+
+  getCompensation(): string {
+    return this.salaryScaleService.getCompensationForSalary(this.bestOffer);
   }
 
   getWinners(){
