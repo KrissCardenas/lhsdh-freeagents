@@ -32,12 +32,10 @@ export class MySalaryCapComponent implements OnInit {
   forwards: Player[] = [];
   defensemen: Player[] = [];
   goalies: Player[] = [];
-  players35: Player[] = [];
 
   forwardDataSource: MatTableDataSource<Player> = new MatTableDataSource();
   defenseDataSource: MatTableDataSource<Player> = new MatTableDataSource();
   goalieDataSource: MatTableDataSource<Player> = new MatTableDataSource();
-  players35DataSource: MatTableDataSource<Player> = new MatTableDataSource();
 
   currentTeamName: string = '';
   currentTeamLogoURL: string = '';
@@ -91,7 +89,6 @@ export class MySalaryCapComponent implements OnInit {
     this.forwards = [];
     this.defensemen = [];
     this.goalies = [];
-    this.players35 = [];
 
     this.initTables(newTeam.teamID);
   }
@@ -106,23 +103,19 @@ export class MySalaryCapComponent implements OnInit {
   splitPlayers(team: number) {
     this.playerService.getPlayersFromTeam(team, false).subscribe((players) => {
       for (let player of players) {
-        if (player.status === '35+') {
-          this.players35.push(player);
-        } else {
-          switch (player.position) {
-            case 'Attaquant':
-              this.forwards.push(player);
-              break;
-            case 'Défenseur':
-              this.defensemen.push(player);
-              break;
-            case 'Gardien':
-              this.goalies.push(player);
-              break;
+        switch (player.position) {
+          case 'Attaquant':
+            this.forwards.push(player);
+            break;
+          case 'Défenseur':
+            this.defensemen.push(player);
+            break;
+          case 'Gardien':
+            this.goalies.push(player);
+            break;
 
-            default:
-              break;
-          }
+          default:
+            break;
         }
       }
 
@@ -134,9 +127,6 @@ export class MySalaryCapComponent implements OnInit {
 
       this.sortPlayers(this.goalies);
       this.goalieDataSource.data = this.goalies as Player[];
-
-      this.sortPlayers(this.players35);
-      this.players35DataSource.data = this.players35 as Player[];
     });
   }
 
@@ -183,7 +173,7 @@ export class MySalaryCapComponent implements OnInit {
       return player.salary;
     }
 
-    if (player.status === 'UFA') {
+    if (player.status === 'UFA' || player.status === '35+') {
       if (this.playersWithOfferIds.indexOf(player.uniqueID) !== -1) {
         for (let index = 0; index < this.myOffers.length; index++) {
           const offer = this.myOffers[index];
@@ -192,10 +182,11 @@ export class MySalaryCapComponent implements OnInit {
           }
         }
       }
-      return player.expectedSalary.max;
+      // les UFA visent le haut de leur échelle, les 35+ le bas
+      return player.status === 'UFA'
+        ? player.expectedSalary.max
+        : player.expectedSalary.min;
     } else if (player.status === 'RFA') {
-      return player.expectedSalary.min;
-    } else if (player.status === '35+') {
       return player.expectedSalary.min;
     }
     return player.salary;
