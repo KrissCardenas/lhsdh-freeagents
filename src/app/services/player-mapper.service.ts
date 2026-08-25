@@ -119,7 +119,7 @@ export class PlayerMapperService {
 
   mapContract(Contract: number, IsFA: boolean, Age: number): number {
     if (IsFA && Age > 34) {
-      return 0;
+      // return 0;
     }
     return Contract;
   }
