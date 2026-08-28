@@ -24,8 +24,13 @@
       </p>
     </div>
     <div class="col">
-      <h2>Moy. Offres: {{average | currency:'CAD':'symbol-narrow':'1.0-2':'fr-CA'}}</h2>
+      <h2 *ngIf="isRFA(); else averageBlock">Meilleure offre: {{bestOffer |
+        currency:'CAD':'symbol-narrow':'1.0-2':'fr-CA'}}</h2>
+      <ng-template #averageBlock>
+        <h2>Moy. Offres: {{average | currency:'CAD':'symbol-narrow':'1.0-2':'fr-CA'}}</h2>
+      </ng-template>
       <h1>Gagnant(s): {{getWinners()}}</h1>
+      <h4 *ngIf="showCompensation()" class="compensation">Compensation: {{getCompensation()}}</h4>
       <h4><U>Historique:</U></h4>
       <mat-list class="att-list">
         <mat-list-item *ngFor="let offre of offers" role="listitem">{{getOfferedBy(offre)}} a offert {{offre.amount |

@@ -49,6 +49,11 @@
   width: 260px;
 }
 
+.compensation {
+  color: #f44336;
+  margin-bottom: 4%;
+}
+
 .attention{
   border-left: 10px solid #f44336 !important;
   border-radius: 5px;

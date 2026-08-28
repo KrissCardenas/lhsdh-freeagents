@@ -10,7 +10,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class OffersService {
-  OFFERS_RESSOURCE_URL = 'https://lhsdb-fa-api.piriwin.com/offers';
+  OFFERS_RESSOURCE_URL = 'https://lhsdb-fa-api.piriwin.com/offers'; 
   //OFFERS_RESSOURCE_URL = 'https://localhost:44351/offers';
 
   constructor(private restClient: HttpClient) { }
@@ -93,7 +93,7 @@ export class OffersService {
   }
 
   removeOffer(playerId: number): Observable<any> {
-    // return this.restClient.delete(this.OFFERS_RESSOURCE_URL + "/" + playerId);
+     // return this.restClient.delete(this.OFFERS_RESSOURCE_URL + "/" + playerId);
      window.alert("Le marché des agents libres est maintenant fermé");
      return;
   }
